@@ -6,7 +6,7 @@ export default class GameBoard {
   }
 
   createBoard() {
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 16; i += 1) {
       const cell = document.createElement('div');
       cell.className = 'cell';
       cell.dataset.index = i;

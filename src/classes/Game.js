@@ -8,7 +8,7 @@ export default class Game {
     this.missesElement = document.getElementById('misses');
     this.score = 0;
     this.misses = 0;
-    this.currentGoblin = new Goblin(); 
+    this.currentGoblin = new Goblin();
     this.missTimeout = null;
     this.gameActive = true;
   }
