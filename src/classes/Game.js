@@ -11,39 +11,51 @@ export default class Game {
     this.currentGoblin = new Goblin();
     this.missTimeout = null;
     this.gameActive = true;
+
+    this.modal = document.getElementById('modal');
+    this.finalScoreElement = document.getElementById('final-score');
+    this.restartButton = document.getElementById('restart-button');
+
+    this.restartButton.addEventListener('click', () => {
+      this.reset();
+      this.modal.classList.add('hidden');
+    });
   }
 
   start() {
+    this.board.onCellClick((cell) => this.onCellClick(cell));
     this.spawnGoblin();
+  }
+
+  onCellClick(cell) {
+    if (!this.gameActive) return;
+
+    if (cell.contains(this.currentGoblin.element)) {
+      this.onGoblinHit();
+    } else {
+      this.onMissClick();
+    }
   }
 
   spawnGoblin() {
     if (!this.gameActive) return;
 
-    const cell = this.board.randomCell;
+    const previousCell = this.currentGoblin.currentCell;
+    const cell = previousCell
+      ? this.board.randomCellExcept(previousCell)
+      : this.board.randomCell;
 
-    this.currentGoblin.reappear(cell);
-
-    if (this.missTimeout) {
-      clearTimeout(this.missTimeout);
-    }
+    this.currentGoblin.show(cell);
 
     this.missTimeout = setTimeout(() => {
+      this.missTimeout = null;
       if (this.gameActive) {
-        this.miss();
+        this.onMissTimeout();
       }
     }, 1000);
-
-    const onClick = () => {
-      if (!this.gameActive) return;
-      this.onGoblinClick();
-      cell.removeEventListener('click', onClick);
-    };
-
-    cell.addEventListener('click', onClick);
   }
 
-  onGoblinClick() {
+  onGoblinHit() {
     if (this.missTimeout) {
       clearTimeout(this.missTimeout);
       this.missTimeout = null;
@@ -61,10 +73,16 @@ export default class Game {
     }, 500);
   }
 
-  miss() {
-    if (!this.gameActive || this.missTimeout === null) return;
+  onMissClick() {
+    if (this.missTimeout && this.gameActive) {
+      clearTimeout(this.missTimeout);
+      this.missTimeout = null;
+      this.onMiss();
+    }
+  }
 
-    this.missTimeout = null;
+  onMissTimeout() {
+    this.currentGoblin.hide();
 
     this.misses += 1;
     this.missesElement.textContent = this.misses;
@@ -72,8 +90,22 @@ export default class Game {
     if (this.misses >= 5) {
       this.endGame();
     } else {
-      this.currentGoblin.hide();
+      setTimeout(() => {
+        if (this.gameActive) {
+          this.spawnGoblin();
+        }
+      }, 500);
+    }
+  }
 
+  onMiss() {
+    this.misses += 1;
+    this.missesElement.textContent = this.misses;
+
+    if (this.misses >= 5) {
+      this.endGame();
+    } else {
+      this.currentGoblin.hide();
       setTimeout(() => {
         if (this.gameActive) {
           this.spawnGoblin();
@@ -88,6 +120,18 @@ export default class Game {
       clearTimeout(this.missTimeout);
     }
     this.currentGoblin.hide();
-    alert(`Игра окончена! Ваш счёт: ${this.score}`);
+    this.finalScoreElement.textContent = this.score;
+    this.modal.classList.remove('hidden');
+  }
+
+  reset() {
+    this.score = 0;
+    this.misses = 0;
+    this.scoreElement.textContent = '0';
+    this.missesElement.textContent = '0';
+    this.gameActive = true;
+    this.missTimeout = null;
+    this.currentGoblin.hide();
+    this.spawnGoblin();
   }
 }

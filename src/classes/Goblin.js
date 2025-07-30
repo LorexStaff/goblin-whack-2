@@ -6,19 +6,21 @@ export default class Goblin {
     this.element.src = goblinImg;
     this.element.alt = 'Гоблин';
     this.element.className = 'goblin';
+    this.currentCell = null;
   }
 
   show(cell) {
-    cell.appendChild(this.element);
+    if (this.currentCell) {
+      this.hide();
+    }
+    cell.append(this.element);
+    this.currentCell = cell;
   }
 
   hide() {
-    document.body.appendChild(this.element);
-    this.element.style.display = 'none';
-  }
-
-  reappear(cell) {
-    this.element.style.display = 'block';
-    cell.appendChild(this.element);
+    if (this.element.parentElement) {
+      this.element.remove();
+    }
+    this.currentCell = null;
   }
 }
